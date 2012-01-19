@@ -8,6 +8,8 @@
 
 package ir;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.io.Serializable;
 
@@ -42,6 +44,39 @@ public class PostingsList implements Serializable {
 
     }
 
+    /** Intersect two postings lists that are not assumed to be sorted */
+    //TODO maintain the postings lists sorted
+    public static PostingsList intersect( PostingsList p1, PostingsList p2 ) {
+
+      // Create a postings list that will contain the intersection
+      PostingsList answer = new PostingsList();
+
+      // Sort the postings lists to intersect
+      Collections.sort( p1.list, new DocIDComparator() );
+      Collections.sort( p2.list, new DocIDComparator() );
+
+      int i1 = 0, i2 = 0;   // Indices to the elements of the postings lists
+      while ( i1 < p1.list.size() && i2 < p2.list.size() ) {
+      
+        PostingsEntry e1 = p1.list.get(i1);
+        PostingsEntry e2 = p2.list.get(i2);
+
+        if ( e1.docID == e2.docID ) {
+          answer.insert(e1);
+          ++i1;
+          ++i2;
+        } else if ( e1.docID < e2.docID ) {
+          ++i1;
+        } else {
+          ++i2;
+        }
+
+      }
+
+      return answer;
+
+    }
+
     /** Returns wheter this PostingsList contains the specified docID */
     private boolean containsDocID( int docID ) {
       
@@ -55,5 +90,11 @@ public class PostingsList implements Serializable {
 
 }
 	
+class DocIDComparator implements Comparator< PostingsEntry > {
 
+  public int compare( PostingsEntry lEntry, PostingsEntry rEntry ) {
+    return lEntry.docID - rEntry.docID;
+  }
+
+}
 			   
