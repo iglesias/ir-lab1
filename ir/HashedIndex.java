@@ -60,11 +60,29 @@ public class HashedIndex implements Index {
      *  Searches the index for postings matching the query in @code{searchterms}.
      */
     public PostingsList search( LinkedList<String> searchterms, int queryType ) {
+     
+      PostingsList answer = new PostingsList();
+
+      int i = 0;
+      while ( i < searchterms.size() && ! index.containsKey( searchterms.get(i) ) )
+        ++i;
+
+      if ( i < searchterms.size() )
+        answer = index.get( searchterms.get(i) );
+
+      ++i;
+      while ( i < searchterms.size() ) {
       
-      if ( index.containsKey( searchterms.get(0) ) )
-        return index.get( searchterms.get(0) );
-      else
-        return null;
+        if ( index.containsKey( searchterms.get(i) ) ) {
+          answer = 
+            PostingsList.intersect(answer, index.get( searchterms.get(i) ) );
+        }
+        
+        ++i;
+
+      }
+
+      return answer;
 
     }
 
