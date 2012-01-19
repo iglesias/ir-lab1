@@ -155,7 +155,7 @@ public class SearchGUI extends JFrame {
 		    if ( p != null ) {
 			buf.append( "\nFound " + p.size() + " matching document(s)\n\n" );
 			for ( int i=0; i<p.size(); i++ ) {
-			    buf.append( " " + i + ". " );
+			    buf.append( " " + (i+1) + ". " );
 			    String filename = indexer.index.docIDs.get( "" + p.get(i).docID );
 			    if ( filename == null ) {
 				buf.append( "" + p.get(i).docID );
