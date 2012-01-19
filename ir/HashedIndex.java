@@ -26,9 +26,21 @@ public class HashedIndex implements Index {
      *  Inserts this token in the index.
      */
     public void insert( String token, int docID, int offset ) {
-	//
-	//  YOUR CODE HERE
-	//
+
+      if ( index.containsKey(token) ) {
+
+        // Add the new docID to the postings list of this token
+        index.get(token).insert( new PostingsEntry(docID) );
+
+      } else {
+
+        // Add a new element to the hash map
+        PostingsList postingsList = new PostingsList();
+        postingsList.insert( new PostingsEntry(docID) );
+        index.put(token, postingsList);
+
+      }
+
     }
 
 
@@ -48,10 +60,12 @@ public class HashedIndex implements Index {
      *  Searches the index for postings matching the query in @code{searchterms}.
      */
     public PostingsList search( LinkedList<String> searchterms, int queryType ) {
-	// 
-	//  REPLACE THE STATEMENT BELOW WITH YOUR CODE
-	//
-	return null;
+      
+      if ( index.containsKey( searchterms.get(0) ) )
+        return index.get( searchterms.get(0) );
+      else
+        return null;
+
     }
 
 
