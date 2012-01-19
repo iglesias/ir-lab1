@@ -19,7 +19,6 @@ public class PostingsList implements Serializable {
     /** The postings list as a linked list. */
     private LinkedList<PostingsEntry> list = new LinkedList<PostingsEntry>();
 
-
     /**  Number of postings in this list  */
     public int size() {
 	return list.size();
@@ -33,6 +32,27 @@ public class PostingsList implements Serializable {
     //
     //  YOUR CODE HERE
     //
+
+    /** Adds a posting */
+    public void insert( PostingsEntry entry ) {
+
+      //TODO entries in the postings list ordered by docIDs as in the book?
+      if ( !containsDocID( entry.docID ) )
+        list.addLast(entry);
+
+    }
+
+    /** Returns wheter this PostingsList contains the specified docID */
+    private boolean containsDocID( int docID ) {
+      
+      for ( int i = 0 ; i < list.size() ; ++i )
+        if ( docID == list.get(i).docID )
+          return true;
+      
+      return false;
+
+    }
+
 }
 	
 
