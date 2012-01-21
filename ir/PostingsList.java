@@ -36,24 +36,29 @@ public class PostingsList implements Serializable {
     //
 
     /** Adds a posting */
-    public void insert( PostingsEntry entry ) {
+    public void insert(int docID, int offset) {
 
-      //TODO entries in the postings list ordered by docIDs as in the book?
-      if ( !containsDocID( entry.docID ) )
-        list.addLast(entry);
+      //TODO This insert could be done faster using something similar to binary
+      // search
+
+      // The postings list is maintained ordered by docID
+      int i = 0;
+      while ( i < list.size() && list.get(i).docID < docID )  ++i;
+      
+      if ( i >= list.size() )                   // There was no bigger docID
+        list.add( new PostingsEntry(docID, offset) );
+      else if ( docID == list.get(i).docID )    // docID already in the list
+        list.get(i).positions.add(offset);
+      else                                      // Insert docID in the middle
+        list.add( i, new PostingsEntry(docID, offset) );
 
     }
 
     /** Intersect two postings lists that are not assumed to be sorted */
-    //TODO maintain the postings lists sorted
     public static PostingsList intersect( PostingsList p1, PostingsList p2 ) {
 
       // Create a postings list that will contain the intersection
       PostingsList answer = new PostingsList();
-
-      // Sort the postings lists to intersect
-      Collections.sort( p1.list, new DocIDComparator() );
-      Collections.sort( p2.list, new DocIDComparator() );
 
       int i1 = 0, i2 = 0;   // Indices to the elements of the postings lists
       while ( i1 < p1.list.size() && i2 < p2.list.size() ) {
@@ -62,7 +67,7 @@ public class PostingsList implements Serializable {
         PostingsEntry e2 = p2.list.get(i2);
 
         if ( e1.docID == e2.docID ) {
-          answer.insert(e1);
+          answer.insert(e1.docID, 0);
           ++i1;
           ++i2;
         } else if ( e1.docID < e2.docID ) {
@@ -90,6 +95,10 @@ public class PostingsList implements Serializable {
 
 }
 	
+/**
+ * @deprecated Because the postings lists are ordered by docID now, remove
+ * deprecated and use again if needed
+ */
 class DocIDComparator implements Comparator< PostingsEntry > {
 
   public int compare( PostingsEntry lEntry, PostingsEntry rEntry ) {
