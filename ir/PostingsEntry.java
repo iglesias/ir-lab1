@@ -9,6 +9,7 @@
 package ir;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 
 public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     
@@ -30,8 +31,13 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     //  YOUR CODE HERE
     //
 
-    public PostingsEntry(int docID) {
+    // List with the positions of the term in the document docID. This
+    // information is required for positional indexes
+    public LinkedList< Integer > positions = new LinkedList< Integer >();
+
+    public PostingsEntry(int docID, int offset) {
       this.docID = docID;
+      positions.add(offset);
     }
 
 
