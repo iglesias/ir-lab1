@@ -54,7 +54,7 @@ public class PostingsList implements Serializable {
 
     }
 
-    /** Intersect two postings lists that are not assumed to be sorted */
+    /** Intersect two postings lists that sorted by docID */
     public static PostingsList intersect( PostingsList p1, PostingsList p2 ) {
 
       // Create a postings list that will contain the intersection
