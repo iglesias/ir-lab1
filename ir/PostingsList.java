@@ -83,6 +83,9 @@ public class PostingsList implements Serializable {
     }
 
     /** Returns wheter this PostingsList contains the specified docID */
+    /** @deprecated Because the postings lists are ordered by docID now, remove
+     *  deprecated and use again if needed
+     */
     private boolean containsDocID( int docID ) {
       
       for ( int i = 0 ; i < list.size() ; ++i )
