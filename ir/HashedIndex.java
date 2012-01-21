@@ -30,13 +30,13 @@ public class HashedIndex implements Index {
       if ( index.containsKey(token) ) {
 
         // Add the new docID to the postings list of this token
-        index.get(token).insert( new PostingsEntry(docID) );
+        index.get(token).insert(docID, offset);
 
       } else {
 
         // Add a new element to the hash map
         PostingsList postingsList = new PostingsList();
-        postingsList.insert( new PostingsEntry(docID) );
+        postingsList.insert(docID, offset);
         index.put(token, postingsList);
 
       }
