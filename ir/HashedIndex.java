@@ -9,8 +9,9 @@
 
 package ir;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 
 /**
@@ -61,31 +62,68 @@ public class HashedIndex implements Index {
      */
     public PostingsList search( LinkedList<String> searchterms, int queryType ) {
      
-      PostingsList answer = new PostingsList();
+      PostingsList answer = null;
 
-      int i = 0;
-      while ( i < searchterms.size() && ! index.containsKey( searchterms.get(i) ) )
-        ++i;
+      // If there is only one term to look for, the type does not matter
+      if ( searchterms.size() == 1 )
+        return index.get( searchterms.get(0) );
 
-      if ( i < searchterms.size() )
-        answer = index.get( searchterms.get(i) );
-
-      ++i;
-      while ( i < searchterms.size() ) {
-      
-        if ( index.containsKey( searchterms.get(i) ) ) {
-          answer = 
-            PostingsList.intersect(answer, index.get( searchterms.get(i) ) );
-        }
-        
-        ++i;
-
+      switch (queryType) {
+        case Index.INTERSECTION_QUERY:
+          answer = intersectionSearch(searchterms);
+          break;
+        case Index.PHRASE_QUERY:
+          answer = phraseSearch(searchterms);
       }
+
 
       return answer;
 
     }
 
+    private PostingsList intersectionSearch( LinkedList<String> searchterms ) {
+
+      PostingsList answer = index.get( searchterms.get(0) );
+
+      for ( int i = 1 ; i < searchterms.size() ; ++i )
+          answer = 
+            PostingsList.intersect(answer, index.get( searchterms.get(i) ) );
+
+      return answer;
+
+    }
+
+    private PostingsList phraseSearch( LinkedList<String> searchterms ) {
+
+      // Vector that will contain the positional intersection of each term with
+      // every other term after it in searchterms
+      int n = searchterms.size(); 
+      PostingsList[] lists = new PostingsList[n-1];
+
+      // Positional intersect of each term with every other term after it
+
+      for ( int i = 0 ; i < n-1 ; ++i) {
+
+        lists[i] = index.get( searchterms.get(i) );
+
+        for ( int j = i+1 ; j < n ; ++j )
+          lists[i] = PostingsList.posIntersect( 
+                            lists[i], 
+                            index.get( searchterms.get(j) ) ,
+                            j - i);
+
+      }
+
+      // Intersect all the previous obtained lists
+
+      PostingsList answer = lists[0];
+
+      for ( int i = 1 ; i < n-1 ; ++i )
+        answer = PostingsList.intersect(answer, lists[i] );
+
+      return answer;
+
+    }
 
     /**
      *  No need for cleanup in a HashedIndex.
