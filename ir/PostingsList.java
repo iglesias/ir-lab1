@@ -54,20 +54,23 @@ public class PostingsList implements Serializable {
 
     }
 
-    /** Intersect two postings lists that sorted by docID */
+    /** Intersect two postings lists that are sorted by docID */
     public static PostingsList intersect( PostingsList p1, PostingsList p2 ) {
+
+      if ( p1 == null || p2 == null )
+        return null;
 
       // Create a postings list that will contain the intersection
       PostingsList answer = new PostingsList();
 
-      int i1 = 0, i2 = 0;   // Indices to the elements of the postings lists
+      int i1 = 0, i2 = 0;   // Indices to the elements in the postings lists
       while ( i1 < p1.list.size() && i2 < p2.list.size() ) {
       
         PostingsEntry e1 = p1.list.get(i1);
         PostingsEntry e2 = p2.list.get(i2);
 
         if ( e1.docID == e2.docID ) {
-          answer.insert(e1.docID, 0);
+          answer.insert(e1.docID, 0);   // The offset is not relevant here
           ++i1;
           ++i2;
         } else if ( e1.docID < e2.docID ) {
@@ -80,6 +83,57 @@ public class PostingsList implements Serializable {
 
       return answer;
 
+    }
+
+    /** Intersect two postings lists that are sorted by docID if the term
+     *  associated to p2 appears k positions ahead of the term associated to p1 */
+    public static PostingsList posIntersect(
+        PostingsList  p1, 
+        PostingsList  p2,
+        int           k ) {
+
+      if ( p1 == null || p2 == null )
+        return null;
+
+      // Postings list that will contain the intersection
+      PostingsList answer = new PostingsList();
+
+      int i1 = 0, i2 = 0;       // Indices to the elements in the postings lists
+      while ( i1 < p1.list.size() && i2 < p2.list.size() ) {
+
+        PostingsEntry e1 = p1.list.get(i1);
+        PostingsEntry e2 = p2.list.get(i2);
+
+        if ( e1.docID == e2.docID ) {
+        
+          int ii1 = 0, ii2 = 0; // Indices for the positions lists
+          while ( ii1 < e1.positions.size() ) {
+            while ( ii2 < e2.positions.size() ) {
+
+              if ( e2.positions.get(ii2) - e1.positions.get(ii1) == k ) {
+                answer.insert( e1.docID, e1.positions.get(ii1) );
+                break;
+              } else if ( e2.positions.get(ii2) - e1.positions.get(ii1) > k ) {
+                break;
+              }
+
+              ++ii2;
+
+            }
+            ++ii1;
+          }
+          ++i1;
+          ++i2;
+
+        } else if ( e1.docID < e2.docID ) {
+          ++i1;
+        } else {
+          ++i2;
+        }
+
+      }
+
+      return answer;
     }
 
     /** Returns wheter this PostingsList contains the specified docID */
