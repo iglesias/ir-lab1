@@ -111,7 +111,7 @@ public class PostingsList implements Serializable {
             while ( ii2 < e2.positions.size() ) {
 
               if ( e2.positions.get(ii2) - e1.positions.get(ii1) == k ) {
-                answer.insert( e1.docID, e1.positions.get(ii1) );
+                answer.insert( e2.docID, e2.positions.get(ii2) );
                 break;
               } else if ( e2.positions.get(ii2) - e1.positions.get(ii1) > k ) {
                 break;
