@@ -76,7 +76,6 @@ public class HashedIndex implements Index {
           answer = phraseSearch(searchterms);
       }
 
-
       return answer;
 
     }
@@ -87,7 +86,7 @@ public class HashedIndex implements Index {
 
       for ( int i = 1 ; i < searchterms.size() ; ++i )
           answer = 
-            PostingsList.intersect(answer, index.get( searchterms.get(i) ) );
+            PostingsList.intersect( answer, index.get( searchterms.get(i) ) );
 
       return answer;
 
@@ -95,31 +94,11 @@ public class HashedIndex implements Index {
 
     private PostingsList phraseSearch( LinkedList<String> searchterms ) {
 
-      // Vector that will contain the positional intersection of each term with
-      // every other term after it in searchterms
-      int n = searchterms.size(); 
-      PostingsList[] lists = new PostingsList[n-1];
+      PostingsList answer = index.get( searchterms.get(0) );
 
-      // Positional intersect of each term with every other term after it
-
-      for ( int i = 0 ; i < n-1 ; ++i) {
-
-        lists[i] = index.get( searchterms.get(i) );
-
-        for ( int j = i+1 ; j < n ; ++j )
-          lists[i] = PostingsList.posIntersect( 
-                            lists[i], 
-                            index.get( searchterms.get(j) ) ,
-                            j - i);
-
-      }
-
-      // Intersect all the previous obtained lists
-
-      PostingsList answer = lists[0];
-
-      for ( int i = 1 ; i < n-1 ; ++i )
-        answer = PostingsList.intersect(answer, lists[i] );
+      for ( int i = 1 ; i < searchterms.size() ; ++i )
+          answer = 
+            PostingsList.posIntersect(answer, index.get( searchterms.get(i) ), 1);
 
       return answer;
 
