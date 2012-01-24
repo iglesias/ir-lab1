@@ -8,8 +8,9 @@
 
 package ir;
 
-import com.larvalabs.megamap.MegaMapManager;
 import com.larvalabs.megamap.MegaMap;
+import com.larvalabs.megamap.MegaMapException;
+import com.larvalabs.megamap.MegaMapManager;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.HashMap;
@@ -146,9 +147,25 @@ public class MegaIndex implements Index {
      *  Inserts this token in the hashtable.
      */
     public void insert( String token, int docID, int offset ) {
-	//
-	//  COPY THE CODE FROM YOUR HashedIndex CLASS HERE
-	//
+
+      if ( index.getKeys().contains(token) ) {
+
+        try {
+          // Add the new docID to the postings list of this token
+          ( (PostingsList) index.get(token) ).insert(docID, offset);
+        } catch (MegaMapException e) {
+          e.printStackTrace();
+        }
+
+      } else {
+
+        // Add a new element to the hash map
+        PostingsList postingsList = new PostingsList();
+        postingsList.insert(docID, offset);
+        index.put(token, postingsList);
+
+      }
+
     }
 
 
@@ -169,11 +186,60 @@ public class MegaIndex implements Index {
      *  Searches the index for postings matching the query in @code{searchterms}.
      */
     public PostingsList search( LinkedList<String> searchterms, int queryType ) {
-	//
-	//  REPLACE THE STATEMENT BELOW WITH THE CODE FROM
-	//  YOUR HashedIndex CLASS
-	//
-	return null;
+     
+      PostingsList answer = null;
+
+      // If there is only one term to look for, the type does not matter
+      if ( searchterms.size() == 1 )
+        try {
+          return (PostingsList) index.get( searchterms.get(0) );
+        } catch (MegaMapException e) {
+          e.printStackTrace();
+        }
+
+      try {
+
+        switch (queryType) {
+          case Index.INTERSECTION_QUERY:
+            answer = intersectionSearch(searchterms);
+            break;
+          case Index.PHRASE_QUERY:
+            answer = phraseSearch(searchterms);
+        }
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      return answer;
+
+    }
+
+    private PostingsList intersectionSearch( LinkedList<String> searchterms ) 
+      throws MegaMapException {
+
+      PostingsList answer = ( (PostingsList) index.get( searchterms.get(0) ) );
+
+      for ( int i = 1 ; i < searchterms.size() ; ++i ) {
+        PostingsList tmp = ( (PostingsList) index.get( searchterms.get(i) ) );
+        answer = PostingsList.intersect(answer, tmp );
+      }
+
+      return answer;
+
+    }
+
+    private PostingsList phraseSearch( LinkedList<String> searchterms ) 
+      throws MegaMapException {
+
+      PostingsList answer = index.get( searchterms.get(0) );
+
+      for ( int i = 1 ; i < searchterms.size() ; ++i )
+          answer = 
+            PostingsList.posIntersect(answer, index.get( searchterms.get(i) ), 1);
+
+      return answer;
+
     }
 
 }
