@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -81,7 +82,8 @@ public class MegaIndex implements Index {
 		MegaMap[] indexesToBeMerged = new MegaMap[indexfiles.size()];
 		for ( int k=0; k<indexfiles.size(); k++ ) {
 		    System.err.println( indexfiles.get(k) );
-		    indexesToBeMerged[k] = manager.createMegaMap( indexfiles.get(k), path, true, false );
+		    indexesToBeMerged[k] = manager.createMegaMap( indexfiles.get(k), path,
+                                                                  true, false );
 		}
 		index = merge( indexesToBeMerged );
 		for ( int k=0; k<indexfiles.size(); k++ ) {
@@ -134,6 +136,48 @@ public class MegaIndex implements Index {
 	try {
 
 	  MegaMap res = manager.createMegaMap( generateFilename(), true, false );
+
+          // Insert all the correspondences between file anmes and docIDs
+          for ( int i = 0 ; i < indexes.length ; ++i ) {
+            HashMap<String, String> m = 
+              (HashMap<String, String>) indexes[i].get("..docIDs");
+            docIDs.putAll(m);
+          }
+
+          // Insert all the postings list of the first index
+          Set keys            = indexes[0].getKeys();
+          Iterator<String> it = keys.iterator();
+
+          while ( it.hasNext() ) {
+            String token = it.next();
+            if ( token.equals("..docIDs") ) continue;
+            res.put( token, (PostingsList) indexes[0].get(token) );
+          }
+
+          // For the rest of the indexes
+          for ( int i = 1 ; i < indexes.length ; ++i ) {
+
+            keys = indexes[i].getKeys();
+            it   = keys.iterator();
+
+            while ( it.hasNext() ) {
+
+              String token = it.next();
+              if ( token.equals("..docIDs") ) continue;
+
+              PostingsList newPostings = (PostingsList) indexes[i].get(token);
+              if ( res.hasKey(token) ) {
+                PostingsList oldPostings = (PostingsList) res.get(token);
+                PostingsList l = PostingsList.unite(oldPostings, newPostings);
+                res.put(token, l);
+              } else {
+                res.put(token, newPostings);
+              }
+
+            }
+
+          }
+
 	  return res;
 
 	} catch ( Exception e ) {
@@ -160,14 +204,13 @@ public class MegaIndex implements Index {
       } else {
 
         // Add a new element to the hash map
-        PostingsList postingsList = new PostingsList();
-        postingsList.insert(docID, offset);
-        index.put(token, postingsList);
+        PostingsList postings = new PostingsList();
+        postings.insert(docID, offset);
+        index.put(token, postings);
 
       }
 
     }
-
 
     /**
      *  Returns the postings for a specific term, or null
