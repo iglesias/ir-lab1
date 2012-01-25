@@ -14,6 +14,7 @@ import com.larvalabs.megamap.MegaMapManager;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -146,9 +147,13 @@ public class MegaIndex implements Index {
     /**
      *  Inserts this token in the hashtable.
      */
+
+    private HashSet<String> terms = new HashSet<String>();
+
     public void insert( String token, int docID, int offset ) {
 
-      if ( index.getKeys().contains(token) ) {
+      //if ( index.getKeys().contains(token) ) {
+      if ( terms.contains(token) ) {
 
         try {
           // Add the new docID to the postings list of this token
@@ -160,6 +165,9 @@ public class MegaIndex implements Index {
       } else {
 
         // Add a new element to the hash map
+
+        terms.add(token);
+
         PostingsList postingsList = new PostingsList();
         postingsList.insert(docID, offset);
         index.put(token, postingsList);
@@ -232,11 +240,12 @@ public class MegaIndex implements Index {
     private PostingsList phraseSearch( LinkedList<String> searchterms ) 
       throws MegaMapException {
 
-      PostingsList answer = index.get( searchterms.get(0) );
+      PostingsList answer = ( (PostingsList) index.get( searchterms.get(0) ) );
 
-      for ( int i = 1 ; i < searchterms.size() ; ++i )
-          answer = 
-            PostingsList.posIntersect(answer, index.get( searchterms.get(i) ), 1);
+      for ( int i = 1 ; i < searchterms.size() ; ++i ) {
+        PostingsList tmp = ( (PostingsList) index.get( searchterms.get(i) ) );
+        answer = PostingsList.posIntersect(answer, tmp, 1);
+      }
 
       return answer;
 
