@@ -136,6 +136,35 @@ public class PostingsList implements Serializable {
       return answer;
     }
 
+    /**
+     * Add to the contents of this list the contents of another assuming that
+     * the same docID does not appear in both lists
+     */
+    public static PostingsList unite( PostingsList p1, PostingsList p2 ) {
+
+      // Create a postings list that will contain the union
+      PostingsList answer = new PostingsList();
+
+      int i1 = 0, i2 = 0;   // Indexes for the lists
+      while ( i1 < p1.list.size() && i2 < p2.list.size() ) {
+      
+        PostingsEntry e1 = p1.list.get(i1);
+        PostingsEntry e2 = p2.list.get(i2);
+
+        if ( e1.docID < e2.docID ) {
+          answer.list.add(e1);
+          ++i1;
+        } else {
+          answer.list.add(e2);
+          ++i2;
+        }
+
+      }
+
+      return answer;
+
+    }
+
     /** Returns wheter this PostingsList contains the specified docID */
     /** @deprecated Because the postings lists are ordered by docID now, remove
      *  deprecated and use again if needed
