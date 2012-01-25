@@ -132,31 +132,23 @@ public class MegaIndex implements Index {
      */
     MegaMap merge( MegaMap[] indexes ) {
 	try {
-	    MegaMap res = manager.createMegaMap( generateFilename(), true, false );
-	    //
-	    //  YOUR CODE HERE
-	    //
-	    return res;
-	}
-	catch ( Exception e ) {
-	    e.printStackTrace();
-	    return null;
+
+	  MegaMap res = manager.createMegaMap( generateFilename(), true, false );
+	  return res;
+
+	} catch ( Exception e ) {
+	  e.printStackTrace();
+	  return null;
 	}
     }
 
-    /**
-     * Set with the terms included in the MegaIndex
-     * This structure is used to avoid calling MegaIndex.getKeys()
-     * every time an insertion in the index is to be done
-     */
-    private HashSet<String> terms = new HashSet<String>();
 
     /**
      *  Inserts this token in the hashtable.
      */
     public void insert( String token, int docID, int offset ) {
 
-      if ( terms.contains(token) ) {
+      if ( index.hasKey(token) ) {
 
         try {
           // Add the new docID to the postings list of this token
@@ -168,9 +160,6 @@ public class MegaIndex implements Index {
       } else {
 
         // Add a new element to the hash map
-
-        terms.add(token);
-
         PostingsList postingsList = new PostingsList();
         postingsList.insert(docID, offset);
         index.put(token, postingsList);
