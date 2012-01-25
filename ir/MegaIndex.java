@@ -145,14 +145,17 @@ public class MegaIndex implements Index {
     }
 
     /**
-     *  Inserts this token in the hashtable.
+     * Set with the terms included in the MegaIndex
+     * This structure is used to avoid calling MegaIndex.getKeys()
+     * every time an insertion in the index is to be done
      */
-
     private HashSet<String> terms = new HashSet<String>();
 
+    /**
+     *  Inserts this token in the hashtable.
+     */
     public void insert( String token, int docID, int offset ) {
 
-      //if ( index.getKeys().contains(token) ) {
       if ( terms.contains(token) ) {
 
         try {
