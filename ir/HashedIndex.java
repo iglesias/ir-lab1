@@ -97,8 +97,8 @@ public class HashedIndex implements Index {
       PostingsList answer = index.get( searchterms.get(0) );
 
       for ( int i = 1 ; i < searchterms.size() ; ++i )
-          answer = 
-            PostingsList.posIntersect(answer, index.get( searchterms.get(i) ), 1);
+        answer = 
+          PostingsList.posIntersect(answer, index.get( searchterms.get(i) ), 1);
 
       return answer;
 
