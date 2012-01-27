@@ -135,7 +135,7 @@ public class MegaIndex implements Index {
     MegaMap merge( MegaMap[] indexes ) {
 	try {
 
-	  MegaMap res = manager.createMegaMap( generateFilename(), true, false );
+	  MegaMap res = manager.createMegaMap( generateFilename(), path, true, false );
 
           // Insert all the correspondences between file anmes and docIDs
           for ( int i = 0 ; i < indexes.length ; ++i ) {
@@ -217,14 +217,8 @@ public class MegaIndex implements Index {
      *  if the term is not in the index.
      */
     public PostingsList getPostings( String token ) {
-	try {
-	    return (PostingsList)index.get( token );
-	}
-	catch( Exception e ) {
-	    return new PostingsList();
-	}
+      return null;
     }
-
 
     /**
      *  Searches the index for postings matching the query in @code{searchterms}.
