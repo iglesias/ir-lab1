@@ -217,11 +217,12 @@ public class MegaIndex implements Index {
      *  if the term is not in the index.
      */
     public PostingsList getPostings( String token ) {
-	//
-	//  REPLACE THE STATEMENT BELOW WITH THE CODE FROM
-	//  YOUR HashedIndex CLASS
-	//
-	return null;
+	try {
+	    return (PostingsList)index.get( token );
+	}
+	catch( Exception e ) {
+	    return new PostingsList();
+	}
     }
 
 
