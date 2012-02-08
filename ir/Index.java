@@ -22,8 +22,8 @@ public interface Index {
     public static final int PHRASE_QUERY = 1;
     public static final int RANKED_QUERY = 2;
 	
-    public HashMap<String, String> docIDs = new HashMap<String,String>();
-    public HashMap<String,Integer> docLengths = new HashMap<String,Integer>();
+    public HashMap<String, String> docIDs = new HashMap<String, String>();
+    public HashMap<String, Integer> docLengths = new HashMap<String, Integer>();
 
     public void insert( String token, int docID, int offset );
     public PostingsList getPostings( String token );
