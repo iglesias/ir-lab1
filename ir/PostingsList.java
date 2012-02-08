@@ -21,7 +21,7 @@ public class PostingsList implements Serializable {
     /** The postings list as a linked list. */
     private LinkedList<PostingsEntry> list = new LinkedList<PostingsEntry>();
 
-    /**  Number of postings in this list  */
+    /** Number of postings in this list  */
     public int size() {
 	return list.size();
     }
@@ -30,10 +30,6 @@ public class PostingsList implements Serializable {
     public PostingsEntry get( int i ) {
 	return list.get( i );
     }
-
-    //
-    //  YOUR CODE HERE
-    //
 
     /** Adds a posting */
     public void insert(int docID, int offset) {
@@ -47,9 +43,10 @@ public class PostingsList implements Serializable {
       
       if ( i >= list.size() )                   // There was no bigger docID
         list.add( new PostingsEntry(docID, offset) );
-      else if ( docID == list.get(i).docID )    // docID already in the list
+      else if ( docID == list.get(i).docID ) {  // docID already in the list
+        ++list.get(i).termFreq;
         list.get(i).positions.add(offset);
-      else                                      // Insert docID in the middle
+      } else                                    // Insert docID in the middle
         list.add( i, new PostingsEntry(docID, offset) );
 
     }
@@ -137,8 +134,8 @@ public class PostingsList implements Serializable {
     }
 
     /**
-     * Add to the contents of this list the contents of another assuming that
-     * the same docID does not appear in both lists
+     * Add to the contents of the first list the contents of the second assuming 
+     * that the same docID does not appear in both lists
      */
     public static PostingsList unite( PostingsList p1, PostingsList p2 ) {
 
@@ -160,6 +157,15 @@ public class PostingsList implements Serializable {
         }
 
       }
+
+      // Insert the terms that may remain left in either of the lists
+
+      while ( i1 < p1.list.size() )
+        answer.list.add( p1.list.get(i1++) );
+
+      while ( i2 < p2.list.size() )
+        answer.list.add( p2.list.get(i2++) );
+
 
       return answer;
 
