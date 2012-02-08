@@ -137,7 +137,7 @@ public class MegaIndex implements Index {
 
 	  MegaMap res = manager.createMegaMap( generateFilename(), path, true, false );
 
-          // Insert all the correspondences between file anmes and docIDs
+          // Insert all the correspondences between file names and docIDs
           for ( int i = 0 ; i < indexes.length ; ++i ) {
             HashMap<String, String> m = 
               (HashMap<String, String>) indexes[i].get("..docIDs");
