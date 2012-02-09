@@ -11,7 +11,9 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
 
 
 /**
@@ -64,16 +66,14 @@ public class HashedIndex implements Index {
      
       PostingsList answer = null;
 
-      // If there is only one term to look for, the type does not matter
-      if ( searchterms.size() == 1 )
-        return index.get( searchterms.get(0) );
-
       switch (queryType) {
         case Index.INTERSECTION_QUERY:
           answer = intersectionSearch(searchterms);
           break;
         case Index.PHRASE_QUERY:
           answer = phraseSearch(searchterms);
+        case Index.RANKED_QUERY:
+          answer = rankedSearch(searchterms);
       }
 
       return answer;
@@ -105,8 +105,104 @@ public class HashedIndex implements Index {
     }
 
     /**
+     *  TODO Support queries with more than one word
+     */
+    private PostingsList rankedSearch( LinkedList<String> searchterms ) {
+
+      // Number of documents
+      int N = docIDs.size();
+
+      // Documents that contain all the terms in the query
+      PostingsList postings = index.get( searchterms.get(0) );
+      // Initialize the scores
+      for ( int i = 0 ; i < postings.size() ; ++i )
+        postings.get(i).score = 0;
+
+      // Document frequency, number of documents that contain the term
+      int df = postings.size();
+
+      // Compute the weight of the term in the query
+      double wq = Math.log10( (double)(N) / df ); //TODO add the tf part
+
+      for ( int i = 0 ; i < postings.size() ; ++i ) {
+        
+        PostingsEntry entry = postings.get(i);
+
+        // Term frequency, times the term appears in the document
+        int tf = entry.positions.size();
+        // Compute the weight of the term in the document
+        double wd = ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+
+        System.out.println(">>>> wq = " + wq + " wd = " + wd);
+
+        entry.score += wq*wd;
+
+      }
+
+      /*
+      int docID;
+      // Normalize the scores using the length of the documents
+      for ( int i = 0 ; i < postings.size() ; ++i ) {
+        PostingsEntry entry = postings.get(i);
+        docID = entry.docID;
+        entry.score = entry.score / docVectorLengths.get( "" + docID );
+      }
+      */
+
+      return postings.sort();
+
+    }
+
+    /**
      *  No need for cleanup in a HashedIndex.
      */
     public void cleanup() {
     }
+
+    public void computeDocVectorLengths() {
+
+      // Number of documents
+      int N = docIDs.size();
+      // Number of different indexed terms
+      int M = index.size();
+
+      Set<String> keyDocIDs = docIDs.keySet();
+      Set<String> keyTerms;
+      Iterator<String> docIDIt = keyDocIDs.iterator();
+      Iterator<String> termIt;
+      int docID;
+      int tf, df;       // Term frequency and document frequency
+      double length;    // Vector length of a document
+
+      // For every document in the collection
+      while ( docIDIt.hasNext() ) {
+
+        docID = Integer.parseInt( docIDIt.next() );
+
+        // For every term, check if the document contains that term
+        keyTerms  = index.keySet();
+        termIt    = keyTerms.iterator();
+        length    = 0;
+
+        while ( termIt.hasNext() ) {
+          String term = termIt.next();
+          PostingsList postings = index.get(term);
+
+          if ( postings == null ) continue;
+
+          System.out.println(">>>> tf = " + postings.getTermFreq(docID));
+
+          if ( ( tf = postings.getTermFreq(docID) ) > 0 ) {
+            df      = postings.size();
+            length += ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+          }
+        }
+        
+        // Store the vector length of the document
+        docVectorLengths.put("" + docID, length);
+
+      }
+
+    }
+
 }

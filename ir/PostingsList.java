@@ -31,6 +31,24 @@ public class PostingsList implements Serializable {
 	return list.get( i );
     }
 
+    /**
+     *  Return the number of times the term appears in docID
+     */
+    public int getTermFreq( int docID ) {
+    
+      int i = 0;
+      while ( i < list.size() || docID <= list.get(i).docID ) {
+      
+        if ( list.get(i).docID == docID )
+          return list.get(i).positions.size();
+
+      }
+
+      // If the docID is not found, return 0
+      return 0;
+
+    }
+
     /** Adds a posting */
     public void insert(int docID, int offset) {
 
@@ -43,10 +61,9 @@ public class PostingsList implements Serializable {
       
       if ( i >= list.size() )                   // There was no bigger docID
         list.add( new PostingsEntry(docID, offset) );
-      else if ( docID == list.get(i).docID ) {  // docID already in the list
-        ++list.get(i).termFreq;
+      else if ( docID == list.get(i).docID )    // docID already in the list
         list.get(i).positions.add(offset);
-      } else                                    // Insert docID in the middle
+      else                                      // Insert docID in the middle
         list.add( i, new PostingsEntry(docID, offset) );
 
     }
@@ -169,6 +186,14 @@ public class PostingsList implements Serializable {
 
       return answer;
 
+    }
+
+    /**
+     *  Sorts this PostingsList in descending order of scores
+     */
+    public PostingsList sort() {
+      Collections.sort(list, null);
+      return this;
     }
 
     /** Returns wheter this PostingsList contains the specified docID */

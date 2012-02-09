@@ -18,11 +18,6 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     public double score;
 
     /**
-     *  Number of times the term appears in this document
-     */
-    public int termFreq;
-
-    /**
      *  List with the positions of the term in the document docID
      *  This information is required for positional indexes
      */
@@ -33,7 +28,6 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
      */
     public PostingsEntry(int docID, int offset) {
       this.docID    = docID;
-      this.termFreq = 1;
       positions.add(offset);
     }
 
@@ -49,5 +43,3 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     }
 
 }
-
-    

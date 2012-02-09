@@ -162,12 +162,18 @@ public class Indexer {
 
     /* ----------------------------------------------- */
 
-
     /**
      *  Indexes one token.
      */
     public void insertIntoIndex( int docID, String token, int offset ) {
 	index.insert( token, docID, offset );
     }
+
+    /**
+     *
+     */
+    public void computeDocVectorLengths() {
+      index.computeDocVectorLengths();
+    }
+
 }
-	

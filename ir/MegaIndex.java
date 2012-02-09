@@ -281,6 +281,13 @@ public class MegaIndex implements Index {
 
     }
 
+    /**
+     *  TODO
+     */
+    public void computeDocVectorLengths() {
+      
+    }
+
 }
 
 

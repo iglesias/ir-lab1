@@ -24,11 +24,12 @@ public interface Index {
 	
     public HashMap<String, String> docIDs = new HashMap<String, String>();
     public HashMap<String, Integer> docLengths = new HashMap<String, Integer>();
+    public HashMap<String, Double> docVectorLengths = new HashMap<String, Double>();
 
     public void insert( String token, int docID, int offset );
+    public void computeDocVectorLengths();
     public PostingsList getPostings( String token );
     public PostingsList search( LinkedList<String> searchterms, int queryType );
     public void cleanup();
 
 }
-		    
