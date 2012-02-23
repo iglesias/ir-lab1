@@ -72,8 +72,10 @@ public class HashedIndex implements Index {
           break;
         case Index.PHRASE_QUERY:
           answer = phraseSearch(searchterms);
+          break;
         case Index.RANKED_QUERY:
           answer = rankedSearch(searchterms);
+          break;
       }
 
       return answer;
@@ -105,51 +107,61 @@ public class HashedIndex implements Index {
     }
 
     /**
-     *  TODO Support queries with more than one word
+     *
      */
     private PostingsList rankedSearch( LinkedList<String> searchterms ) {
 
       // Number of documents
       int N = docIDs.size();
 
-      // Documents that contain all the terms in the query
-      PostingsList postings = index.get( searchterms.get(0) );
+      PostingsList answer = new PostingsList();
+      // Documents that contain at least one term of the query, union
+      for ( String term : searchterms )
+        answer.unite( index.get(term) );
+      System.out.println("answer has " + answer.size() + " elements");
+
+      // Record of the position where they are inserted in the union
+      HashMap<Integer, Integer> idxs = new HashMap<Integer, Integer>();
+      for ( int i = 0 ; i < answer.size() ; ++i )
+        idxs.put(answer.get(i).docID, i);
+
       // Initialize the scores
-      for ( int i = 0 ; i < postings.size() ; ++i )
-        postings.get(i).score = 0;
+      for ( int i = 0 ; i < answer.size() ; ++i )
+        answer.get(i).score = 0;
 
-      // Document frequency, number of documents that contain the term
-      int df = postings.size();
+      for ( String term : searchterms ) {
 
-      // Compute the weight of the term in the query
-      double wq = Math.log10( (double)(N) / df ); //TODO add the tf part
+        PostingsList postings = index.get(term);
 
-      for ( int i = 0 ; i < postings.size() ; ++i ) {
-        
-        PostingsEntry entry = postings.get(i);
+        // Document frequency, number of documents that contain the term
+        int df = postings.size();
 
-        // Term frequency, times the term appears in the document
-        int tf = entry.positions.size();
-        // Compute the weight of the term in the document
-        double wd = ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+        for ( int i = 0 ; i < postings.size() ; ++i ) {
+          
+          PostingsEntry entry = postings.get(i);
 
-        System.out.println(">>>> wq = " + wq + " wd = " + wd);
+          // Term frequency, times the term appears in the document
+          int tf = entry.positions.size();
+          // Compute the weight of the term in the document
+          double wd = ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+          // Update the score of the adequate entry in the answer postings list
+          answer.get( idxs.get( entry.docID ) ).score += wd;
 
-        entry.score += wq*wd;
+        }
 
       }
 
       /*
-      int docID;
       // Normalize the scores using the length of the documents
-      for ( int i = 0 ; i < postings.size() ; ++i ) {
-        PostingsEntry entry = postings.get(i);
-        docID = entry.docID;
-        entry.score = entry.score / docVectorLengths.get( "" + docID );
+      for ( int i = 0 ; i < answer.size() ; ++i ) {
+        PostingsEntry entry = answer.get(i);
+        int docID = entry.docID;
+        entry.score = entry.score / Math.sqrt( docLengths.get( ""+ docID ) );
+        //entry.score = entry.score / docVectorLengths.get( "" + docID );
       }
       */
 
-      return postings.sort();
+      return answer.sort();
 
     }
 
@@ -171,8 +183,8 @@ public class HashedIndex implements Index {
       Iterator<String> docIDIt = keyDocIDs.iterator();
       Iterator<String> termIt;
       int docID;
-      int tf, df;       // Term frequency and document frequency
-      double length;    // Vector length of a document
+      int tf, df;         // Term frequency and document frequency
+      double length, w;   // Vector length of a doc and weight of an element
 
       // For every document in the collection
       while ( docIDIt.hasNext() ) {
@@ -190,16 +202,15 @@ public class HashedIndex implements Index {
 
           if ( postings == null ) continue;
 
-          System.out.println(">>>> tf = " + postings.getTermFreq(docID));
-
           if ( ( tf = postings.getTermFreq(docID) ) > 0 ) {
             df      = postings.size();
-            length += ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+            w       = ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+            length += w*w;
           }
         }
         
         // Store the vector length of the document
-        docVectorLengths.put("" + docID, length);
+        docVectorLengths.put( "" + docID, Math.sqrt(length) );
 
       }
 
