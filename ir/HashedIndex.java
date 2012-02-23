@@ -118,7 +118,6 @@ public class HashedIndex implements Index {
       // Documents that contain at least one term of the query, union
       for ( String term : searchterms )
         answer.unite( index.get(term) );
-      System.out.println("answer has " + answer.size() + " elements");
 
       // Record of the position where they are inserted in the union
       HashMap<Integer, Integer> idxs = new HashMap<Integer, Integer>();
