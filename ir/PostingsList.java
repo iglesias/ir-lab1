@@ -37,11 +37,13 @@ public class PostingsList implements Serializable {
     public int getTermFreq( int docID ) {
     
       int i = 0;
-      while ( i < list.size() || docID <= list.get(i).docID ) {
+      while ( i < list.size() && docID <= list.get(i).docID ) {
       
         if ( list.get(i).docID == docID )
           return list.get(i).positions.size();
 
+        ++i;
+        
       }
 
       // If the docID is not found, return 0
@@ -183,8 +185,36 @@ public class PostingsList implements Serializable {
       while ( i2 < p2.list.size() )
         answer.list.add( p2.list.get(i2++) );
 
-
       return answer;
+
+    }
+
+    /**
+     *  Add to this list all the elements that are in p and not in the list
+     */
+    public void unite( PostingsList p ) {
+    
+      int ii = 0, ip = 0;
+      while ( ii < list.size() && ip < p.list.size() ) {
+      
+        PostingsEntry ei =   list.get(ii);
+        PostingsEntry ep = p.list.get(ip);
+
+        if ( ei.docID < ep.docID ) {
+          ++ii;  
+        } else if ( ei.docID > ep.docID ) {
+          list.add(ii, ep);
+          ++ip;
+          ++ii;
+        } else if ( ei.docID == ep.docID ) {
+          ++ip;
+          ++ii;
+        }
+
+      }
+
+      while ( ip < p.list.size() )
+        list.add( p.list.get(ip++) );
 
     }
 
