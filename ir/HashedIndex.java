@@ -141,8 +141,17 @@ public class HashedIndex implements Index {
 
           // Term frequency, times the term appears in the document
           int tf = entry.positions.size();
+
           // Compute the weight of the term in the document
-          double wd = ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+
+          // There are several combinations of doing this and it is difficult to
+          // assess which one is the most correct one. The first one is the most
+          // appropriate according to the book. We use the second one though
+          // since it yields results closer to the solution
+
+          // double wd = ( 1 + Math.log10(tf) )*Math.log10( (double)(N) / df );
+          double wd = tf * Math.log10( (double)(N) / df ); 
+
           // Update the score of the adequate entry in the answer postings list
           answer.get( idxs.get( entry.docID ) ).score += wd;
 
@@ -150,15 +159,16 @@ public class HashedIndex implements Index {
 
       }
 
-      /*
-      // Normalize the scores using the length of the documents
+      // Normalize the scores using the length of the documents and add pagerank
       for ( int i = 0 ; i < answer.size() ; ++i ) {
         PostingsEntry entry = answer.get(i);
         int docID = entry.docID;
         entry.score = entry.score / Math.sqrt( docLengths.get( ""+ docID ) );
         //entry.score = entry.score / docVectorLengths.get( "" + docID );
+        Double pageRankScore = docRanks.get("" + docID);
+        if ( pageRankScore != null )
+          entry.score += 10*pageRankScore;
       }
-      */
 
       return answer.sort();
 

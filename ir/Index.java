@@ -22,9 +22,14 @@ public interface Index {
     public static final int PHRASE_QUERY = 1;
     public static final int RANKED_QUERY = 2;
 	
+    /** Doc IDs to complete paths */
     public HashMap<String, String> docIDs = new HashMap<String, String>();
+    /** File name to doc IDs */
+    public HashMap<String, String> nameToIDs = new HashMap<String, String>();
     public HashMap<String, Integer> docLengths = new HashMap<String, Integer>();
     public HashMap<String, Double> docVectorLengths = new HashMap<String, Double>();
+    /** Doc IDs to page rank */
+    public HashMap<String, Double> docRanks = new HashMap<String, Double>();
 
     public void insert( String token, int docID, int offset );
     public void computeDocVectorLengths();

@@ -31,6 +31,9 @@ public class SearchGUI extends JFrame {
     /**  Directories that should be indexed. */
     LinkedList<String> dirNames = new LinkedList<String>();
 
+    /** File with the results of the page rank */
+    File pageRankFile;
+
     /**  Indices to be retrieved from disk. */
     LinkedList<String> indexFiles = new LinkedList<String>();
 
@@ -243,6 +246,7 @@ public class SearchGUI extends JFrame {
 		indexer.processFiles( dokDir );
 	    }
             //indexer.computeDocVectorLengths();
+            indexer.processPageRank( pageRankFile );
 	    resultWindow.setText( "\n  Done!" );
 	}
     };
@@ -277,6 +281,10 @@ public class SearchGUI extends JFrame {
 		i++;
 		indexType = Index.MEGA_INDEX;
 	    }
+            else if ( "-p".equals( args[i] ) ) {
+                i++;
+                pageRankFile = new File( args[i++] );
+            }
 	    else {
 		System.err.println( "Unknown option: " + args[i] );
 		break;

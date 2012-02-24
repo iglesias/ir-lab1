@@ -14,6 +14,7 @@ import java.io.Reader;
 import java.io.FileReader;
 import java.io.StringReader;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -104,6 +105,8 @@ public class Indexer {
 		    }
 		}
 		index.docIDs.put( "" + docID, f.getPath() );
+                String[] splitPath = f.getPath().split("/");
+                index.nameToIDs.put(splitPath[ splitPath.length-1 ], "" + docID);
 		try {
 		    //  Read the first few bytes of the file to see if it is 
 		    // likely to be a PDF 
@@ -138,6 +141,51 @@ public class Indexer {
 		}
 	    }
 	}
+    }
+
+    public void processPageRank( File f ) {
+    
+        // Do not try to read f that cannot be read
+        if ( f != null && f.canRead() && ! f.isDirectory() ) {
+
+            System.err.println("Reading pagerank from " + f.getPath() );
+
+            // Read the pagerank file line by line
+            try {
+                FileInputStream fstream = new FileInputStream( f.getPath() );
+                DataInputStream in      = new DataInputStream(fstream);
+                BufferedReader  br      = new BufferedReader( 
+                                                    new InputStreamReader(in) 
+                                                            );
+
+                String    line;
+                String[]  tokens;
+                double    score;
+                String    fname, docID;
+                while ( (line = br.readLine()) != null ) {
+                    tokens = line.split(" ");
+                    fname = tokens[1] + ".txt";
+                    score = Double.parseDouble( tokens[2] );
+
+                    // When one file is found with score 0.0, all the rest have
+                    // score 0.0 too
+                    if ( score == 0.0 )
+                        break;
+                    
+                    docID = index.nameToIDs.get(fname);
+                    if ( docID != null )
+                        index.docRanks.put(docID, score);
+                }
+
+                in.close();
+
+            } catch ( IOException e ) {
+                e.printStackTrace();
+            }
+
+
+        } 
+    
     }
 
     
